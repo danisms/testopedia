@@ -1,0 +1,3 @@
+# Ignor all files below (do not include the files below when running git push)
+.env
+node_modules

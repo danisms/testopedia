@@ -1,0 +1,73 @@
+//LOCALHOST
+### Get All Questions
+GET http://localhost:4000/questions
+
+### Get Question By Id
+GET http://localhost:4000/questions/6741c0e3b75c45b459f96761
+
+### Add New Question
+POST http://localhost:4000/questions HTTP/1.1
+content-type: application/json
+
+{
+    "_id": 1,
+    "subject": "Art",
+    "level": "intermediate",
+    "type": "text",
+    "questionInfo": "testing question",
+    "question": "what is the first name of the second to last child of the oputes",
+    "answer": "daniel"
+}
+
+### Update a Question
+PUT http://localhost:4000/questions/1 HTTP/1.1
+content-type: application/json
+
+{
+    "subject": "English",
+    "level": "basic",
+    "type": "text",
+    "questionInfo": "testing question",
+    "question": "what is the first name of the second to last child of the oputes",
+    "answer": "daniel"
+}
+
+### Delete a Question
+DELETE http://localhost:4000/questions/1 HTTP/1.1
+
+
+// PRODUCTION
+### Get All Questions
+GET https://cse341-87qw.onrender.com/Questions
+
+### Get Question By Id
+GET https://cse341-87qw.onrender.com/Questions/6736fc076103623ce575e132
+
+### Add New Question
+POST https://cse341-87qw.onrender.com/Questions HTTP/1.1
+content-type: application/json
+
+{
+    "_id": 1,
+    "firstName": "Joel",
+    "lastName": "Opute",
+    "email": "joelcopute@gmail.com",
+    "favoriteColor": "white",
+    "birthdate": "03-12-1987"
+}
+
+### Update a Question
+PUT https://cse341-87qw.onrender.com/Questions/6738465e471c099a8ac4e6eb HTTP/1.1
+content-type: application/json
+
+{   
+    "firstName": "Donald",
+    "lastName": "Opute",
+    "email": "donald.opute@gmail.com",
+    "favoriteColor": "black",
+    "birthdate": "12-02-1985"
+}
+
+### Delete a Question
+DELETE https://cse341-87qw.onrender.com/Questions/6738465e471c099a8ac4e6eb HTTP/1.1
+

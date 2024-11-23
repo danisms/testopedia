@@ -1,0 +1,23 @@
+[
+    {
+        "subject": "math",
+        "level": [
+            "basic",
+            "intermediate",
+            "advanced",
+            "expert"
+        ],
+        "type": [
+            "mc",
+            "text",
+            "file",
+            "verbal"
+        ],
+        "questionInfo": "who, when and were was the question set",
+        "question": "",
+        "answer": "must match type above",
+        "authorId": "user id",
+        "timestamp": "question upload time",
+        "updateTimestamp": []
+    }
+]

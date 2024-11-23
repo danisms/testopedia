@@ -1,0 +1,105 @@
+[
+    {
+        "subject": "Mathematics",
+        "level": "intermediate",
+        "type": "mc",
+        "questionInfo": "Derived from a grade 8 geometry textbook.",
+        "question": "What is the perimeter of a square with sides of length 5? mc[20, 25, 30, 35]",
+        "answer": 0,
+        "timestamp": 1732375365000,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Physics",
+        "level": "advanced",
+        "type": "text",
+        "questionInfo": "Collected from a high school physics competition.",
+        "question": "Explain how Newton's third law applies to rocket propulsion.",
+        "answer": "For every action, there is an equal and opposite reaction.",
+        "timestamp": 1732375365001,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Chemistry",
+        "level": "base",
+        "type": "mc",
+        "questionInfo": "Taken from a basic chemistry worksheet.",
+        "question": "Which of these is a noble gas? mc[Oxygen, Neon, Nitrogen, Hydrogen]",
+        "answer": 1,
+        "timestamp": 1732375365002,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "English",
+        "level": "expert",
+        "type": "verbal",
+        "questionInfo": "Recorded during a spoken language assessment.",
+        "question": "Pronounce the word 'onomatopoeia'.",
+        "answer": "https://example.com/audio/onomatopoeia.mp3",
+        "timestamp": 1732375365003,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Biology",
+        "level": "intermediate",
+        "type": "file",
+        "questionInfo": "From an anatomy practice session.",
+        "question": "Upload a labeled diagram of the human heart.",
+        "answer": "https://example.com/uploads/heart-diagram.pdf",
+        "timestamp": 1732375365004,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Geography",
+        "level": "base",
+        "type": "mc",
+        "questionInfo": "Obtained from a junior high school geography quiz.",
+        "question": "Which continent is the largest? mc[Africa, Asia, Europe, South America]",
+        "answer": 1,
+        "timestamp": 1732375365005,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Computer Science",
+        "level": "advanced",
+        "type": "mc",
+        "questionInfo": "From a university-level computer science class.",
+        "question": "Which of these are sorting algorithms? mc[Bubble Sort, Binary Search, Merge Sort, Depth First Search]",
+        "answer": [
+            0,
+            2
+        ],
+        "timestamp": 1732375365006,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "History",
+        "level": "expert",
+        "type": "text",
+        "questionInfo": "Sourced from a national history competition.",
+        "question": "Describe the causes of World War II.",
+        "answer": "The Treaty of Versailles, economic instability, and the rise of fascist leaders contributed to the war.",
+        "timestamp": 1732375365007,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Physics",
+        "level": "base",
+        "type": "mc",
+        "questionInfo": "Derived from an introductory physics course.",
+        "question": "What is the unit of force? mc[Joule, Newton, Pascal, Watt]",
+        "answer": 1,
+        "timestamp": 1732375365008,
+        "author_id": "current_user_id"
+    },
+    {
+        "subject": "Art",
+        "level": "intermediate",
+        "type": "file",
+        "questionInfo": "Collected from a visual arts workshop.",
+        "question": "Upload a drawing of a landscape with a sunset.",
+        "answer": "https://example.com/uploads/landscape-sunset.jpeg",
+        "timestamp": 1732375365009,
+        "author_id": "current_user_id"
+    }
+]
