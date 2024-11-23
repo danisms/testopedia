@@ -1,7 +1,6 @@
 // IMPORT REQUIRED MODULES
 const mongodb = require('../models/db/connect-db');
 const chunks = require('../utilities/chunks');
-const ObjectId = require('mongodb').ObjectId;
 const { logError } = require('../error-handling/errorHandler');
 
 
