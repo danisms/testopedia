@@ -1,4 +1,3 @@
-const { url } = require('browserify/lib/builtins');
 const { body, validationResult } = require('express-validator');
 
 const validate = {};
