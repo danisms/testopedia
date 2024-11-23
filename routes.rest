@@ -38,36 +38,38 @@ DELETE http://localhost:4000/questions/1 HTTP/1.1
 
 // PRODUCTION
 ### Get All Questions
-GET https://cse341-87qw.onrender.com/Questions
+GET https://testopedia.onrender.com/questions
 
 ### Get Question By Id
-GET https://cse341-87qw.onrender.com/Questions/6736fc076103623ce575e132
+GET https://testopedia.onrender.com/questions/6741c0e3b75c45b459f96761
 
 ### Add New Question
-POST https://cse341-87qw.onrender.com/Questions HTTP/1.1
+POST https://testopedia.onrender.com/questions HTTP/1.1
 content-type: application/json
 
 {
     "_id": 1,
-    "firstName": "Joel",
-    "lastName": "Opute",
-    "email": "joelcopute@gmail.com",
-    "favoriteColor": "white",
-    "birthdate": "03-12-1987"
+    "subject": "Art",
+    "level": "intermediate",
+    "type": "text",
+    "questionInfo": "testing question",
+    "question": "what is the first name of the second to last child of the oputes",
+    "answer": "daniel"
 }
 
 ### Update a Question
-PUT https://cse341-87qw.onrender.com/Questions/6738465e471c099a8ac4e6eb HTTP/1.1
+PUT https://testopedia.onrender.com/questions/1 HTTP/1.1
 content-type: application/json
 
-{   
-    "firstName": "Donald",
-    "lastName": "Opute",
-    "email": "donald.opute@gmail.com",
-    "favoriteColor": "black",
-    "birthdate": "12-02-1985"
+{
+    "subject": "Art",
+    "level": "intermediate",
+    "type": "text",
+    "questionInfo": "testing question",
+    "question": "what is the first name of the second to last child of the oputes",
+    "answer": "daniel"
 }
 
 ### Delete a Question
-DELETE https://cse341-87qw.onrender.com/Questions/6738465e471c099a8ac4e6eb HTTP/1.1
+DELETE https://testopedia.onrender.com/questions/1 HTTP/1.1
 
