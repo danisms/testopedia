@@ -1,6 +1,7 @@
 // IMPORT REQUIRED MODULES
 const express = require('express');
-const validateContact = require('../validation/question-validation');
+const validateQuestion = require('../middleware/validation/question-validation');
+const authenticate = require('../middleware/authenticate');
 
 // IMPORT CONTROLLER
 const questionController = require('../controllers/question');
@@ -16,21 +17,26 @@ router.get('/', questionController.getAllQuestions);
 router.get('/:id', questionController.getAQuestion)
 
 // Route to add new question
-router.post('/', 
-    validateContact.addNewQuestionRules(),
-    validateContact.checkNewQuestion,
+router.post('/',
+    authenticate.isAuthenticated,
+    validateQuestion.addNewQuestionRules(),
+    validateQuestion.checkNewQuestion,
     questionController.addNewQuestion
 );
 
 // Route to update a question
 router.put('/:id',
-    validateContact.updateQuestionRules(),
-    validateContact.checkUpdateQuestion,
+    authenticate.isAuthenticated,
+    validateQuestion.updateQuestionRules(),
+    validateQuestion.checkUpdateQuestion,
     questionController.updateAQuestion,
 );
 
 // Route to delete a question
-router.delete('/:id', questionController.deleteAQuestion);
+router.delete('/:id',
+    authenticate.isAuthenticated,
+    questionController.deleteAQuestion
+);
 
 
 // EXPORT

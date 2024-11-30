@@ -1,5 +1,6 @@
-[
-    {
+{
+    "quesitons" : {
+        "questionId": "unique_id",
         "subject": "math",
         "level": [
             "basic",
@@ -19,5 +20,17 @@
         "authorId": "user id",
         "timestamp": "question upload time",
         "updateTimestamp": []
+    },
+
+    "users" : {
+        "userId": "unique_id",
+        "firstname": "name",
+        "lastname": "name",
+        "email": "user@example.com",
+        "bio": "brief intro of user",
+        "password": "hased_password",
+        "oAuthProvider": "github",
+        "providerUserId" : "github_user_id",
+        "createdAt" : "timestamp"
     }
-]
+}
