@@ -38,10 +38,10 @@ userController.getAUser = async function(req, res) {
         return res.status(400).json({message: invalidIdError});
     }
 
-    const UserId = chunks.validObjectId(req.params.id, true, true);
-    console.log(`UserId: ${UserId}`); // for debugging purpose
+    const userId = chunks.validObjectId(req.params.id, true, true);
+    console.log(`UserId: ${userId}`); // for debugging purpose
     try {
-        const dataResult = await mongodb.getDb().db('testopidia').collection('users').find({_id: UserId});
+        const dataResult = await mongodb.getDb().db('testopidia').collection('users').find({_id: userId});
         dataResult.toArray((err)=> {
             if (err) {
                 logError(err);
@@ -51,14 +51,14 @@ userController.getAUser = async function(req, res) {
             // check if array is empty
             console.log(`Users: ${Users}`);  // for debugging purpose
             if (Users == null || Users == [] || Users == '') {
-                return res.status(404).json({message: `User with id: ${UserId}; Not found, or is empty`});
+                return res.status(404).json({message: `User with id: ${userId}; Not found, or is empty`});
             }
             res.setHeader('Content-Type', 'application/json');
             res.status(200).json(Users);
         })
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: err}) || `Error occured while trying to fetch User with id: ${UserId}`;
+        res.status(500).json({ message: err}) || `Error occured while trying to fetch User with id: ${userId}`;
     }
 }
 
@@ -98,7 +98,7 @@ userController.addNewUser = async function(req, res) {
         password: passowrdHash,
         oAuthProvider: null,
         providerUserId : null,
-        accountType: req.body._id == 1 ? 'admin' : req.body.accountType,  // make account of id 1 to be admin
+        accountType: req.body._id == 1 ? 'fullControl' : req.body.accountType,  // make account of id 1 to be admin
         createdAt : Date.now()
     };
 
@@ -149,23 +149,26 @@ userController.findOrCreateOAuthProviderProfile = async function(oAuthProviderNa
             const find = await usersDb.findOne({ oAuthProvider: object.oAuthProvider, providerUserId: object.profileId });
             console.log(find);  // for visualizing and testing purpose
             if (!find) {
-                const response = await usersDb.insertOne(profileObject);
+                const response = await usersDb.insertOne(profileObject);  // if _id is not present. _id will be added to the object
                 if (response.acknowledged) {
                     const msg = "new oAuthProvider user added successfully";
                     console.log(msg);  // testing purpose
-                    return { status: 201, find: false, message: msg };
+                    // add displayName to profileObject
+                    profileObject.displayName = `${profileObject.firstname.slice(0, 1).toUpperCase()}${profileObject.firstname.slice(1)} ${profileObject.lastname.slice(0, 1).toUpperCase()}${profileObject.lastname.slice(1)}`;  // add display name;
+                    return { status: 201, find: false, userData: profileObject, message: msg };
                 } else {
                     const msg = "fail to add new user";
                     console.log(msg);  // for testing purpose
-                    return { status: 500, find: false, message: msg };
+                    return { status: 500, find: false, userData: find, message: msg };
                 }
             }
             const msg = "Profile already exist.";
             console.log(msg);  // for testing purpose;
-            return { status: 200, found: true, message: msg };
+            find.displayName = `${find.firstname.slice(0, 1).toUpperCase()}${find.firstname.slice(1)} ${find.lastname.slice(0, 1).toUpperCase()}${find.lastname.slice(1)}`;  // add display name;
+            return { status: 200, found: true, userData: find, message: msg };
         } catch (err) {
             console.error(err);
-            return message = { status: 500, found: false, message: err} || "Error occured while trying to find or create new user";
+            return message = { status: 500, found: false, userData: '', message: err} || "Error occured while trying to find or create new user";
         }
     }
 }
@@ -173,65 +176,52 @@ userController.findOrCreateOAuthProviderProfile = async function(oAuthProviderNa
 // Update a User
 userController.updateAUser = async function(req, res) {
     //#swagger.tags=['User routes']
+    // get logged in user Id
+    const userId = chunks.validObjectId(req.session.user._id, true, true);
 
-    // check if id is valid (i.e a 24 character hex string, 12 byte Uint8Array, or an integer).
-    if (!chunks.isValidObjectId(req.params.id, true, true)) {
-        let invalidIdError = "invalid id. User id must be valid to update User";
-            logError({message: invalidIdError})
-            return res.status(400).json({message: invalidIdError});
-    };
-    // set id
-    const UserId = chunks.validObjectId(req.params.id);
-    console.log(`UserId: ${UserId}`);
-
-    // check if req.body object is present
-    if (!req.body) {
-        return res.status(400).send({
-          message: 'User details cannot be empty.\nPlease Include the required User details to be updated!',
-        });
-    }
-
-    let UserObject = {
-        subject : req.body.subject,
-        level : req.body.level,
-        type : req.body.type,
-        UserInfo : req.body.UserInfo,
-        User : req.body.User,
-        answer : req.body.answer,
+    let userObject = {
+        _id: userId,
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        email: req.body.email,
+        profilePhotoUrl: req.body.profilePhotoUrl,
+        bio: req.body.bio,
+        username: req.body.username,
+        password: req.body.password,
+        oAuthProvider: req.session.user.oAuthProvider,
+        providerUserId : req.session.user.providerUserId,
+        accountType: req.session.user.accountType,
+        createdAt : req.session.user.createdAt,
+        updated: []
     };
 
     try {
         // get the previouse user timestamp and add to updateTimestamp list, to be used for the update
-        const dataResult = await mongodb.getDb().db('testopidia').collection('Users').find({ _id: UserId });
+        const dataResult = await mongodb.getDb().db('testopidia').collection('users').find({ _id: userId });
         dataResult.toArray((err)=> {
             if (err) {
                 logError(err);
                 return res.status(400).json({message: err});
             }
-        }).then(async (Users) => {
+        }).then(async (userData) => {
             // check if array is empty
-            console.log(`Users: ${Users}`);  // for debugging purpose
-            if (Users == null || Users == [] || Users == '') {
-                return res.status(404).json({message: `User with id: ${UserId}; Not found, or is empty`});
+            console.log(`Users: ${userData}`);  // for debugging purpose
+            if (userData == null || userData == [] || userData == '') {
+                return res.status(404).json({message: `User with id: ${userId}; Not found, or is empty`});  // for debugging purpose
             }
-            // Add timestamp and updateTimestamp to Update UserObject
-            // adding author_id and timestamp
-            UserObject.author_id = Users[0].author_id != undefined ? Users[0].author_id : 'current_user_id';
-            UserObject.timestamp = Users[0].timestamp == undefined || Users[0].timestamp == null ? Date.now() : Users[0].timestamp;
-            // adding update_authors_id and updateTimestamps
-            UserObject.update_authors_id = Users[0].update_authors_id != undefined ? [...Users[0].update_authors_id, 'current_user_id'] : ['current_user_id'];
-            UserObject.updateTimestamps = Users[0].updateTimestamps != undefined ? [...Users[0].updateTimestamps, Date.now()] : [Date.now()];
-            console.log(`updateUserObject: ${JSON.stringify(UserObject)}`);  // for debugging purpose
+            // add timestamps to update
+            userObject.updated = userData[0].updated != undefined ? [...userData[0].updated, Date.now()] : [Date.now()];
+            console.log(`updateUserObject: ${JSON.stringify(userObject)}`);  // for debugging purpose
 
             // update db with UserObject
-            const response = await mongodb.getDb().db('testopidia').collection('Users').replaceOne({_id: UserId}, UserObject);
+            const response = await mongodb.getDb().db('testopidia').collection('users').replaceOne({_id: userId}, userObject);
             console.log(response);  // for visualizing and testing purpose
             if (response.acknowledged && response.modifiedCount > 0) {
-                const msg = `User with User-id: ${UserId}; has been updated successfully`;
+                const msg = `User with User-id: ${userId}; has been updated successfully`;
                 console.log(msg);  // testing purpose
                 res.status(200).send({message: msg});
             } else {
-                const msg = `fail to update User with User-id: ${UserId};\nPosible Error: Provided User id not found: ${UserId}`;
+                const msg = `fail to update User with User-id: ${userId};\nPosible Error: Provided User id not found: ${userId}`;
                 console.log(msg);  // for testing purpose
                 res.status(404).send({message: msg});
             }
@@ -253,18 +243,18 @@ userController.deleteAUser = async function(req, res) {
         return res.status(400).json({message: invalidIdError});
     }
     
-    const UserId = chunks.validObjectId(req.params.id);
-    console.log(`UserId: ${UserId}`);  // for testing purpose
+    const userId = chunks.validObjectId(req.params.id);
+    console.log(`UserId: ${userId}`);  // for testing purpose
 
     try {
-        const response = await mongodb.getDb().db('testopidia').collection('Users').deleteOne({_id: UserId});
+        const response = await mongodb.getDb().db('testopidia').collection('users').deleteOne({ _id: userId });
         console.log(response);  // for visualizing and testing purpose
         if (response.acknowledged && response.deletedCount > 0) {
-            const msg = `User with User-id: ${UserId}; has been deleted successfully`;
+            const msg = `User with User-id: ${userId}; has been deleted successfully`;
             console.log(msg);  // testing purpose
             res.status(200).send({message: msg});
         } else {
-            const msg = `fail to delete User with User-id: ${UserId};\nPosible Error: Provided User id not found: ${UserId}`;
+            const msg = `fail to delete User with User-id: ${userId};\nPosible Error: Provided User id not found: ${userId}`;
             console.log(msg);  // for testing purpose
             res.status(404).send({message: msg});
         }

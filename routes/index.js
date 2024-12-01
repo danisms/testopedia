@@ -2,8 +2,9 @@
 const express = require('express');
 const questionRoute = require('./question');
 const swaggerRoute = require('./swagger');
-const userRoutes = require('./user.js');
-const loginRoutes = require('./login.js');
+const userRoutes = require('./user');
+const loginRoutes = require('./login');
+const logoutRoute = require('./logout');
 
 // IMPORT CONTROLLER
 const baseController = require('../controllers')
@@ -27,12 +28,7 @@ router.use('/users', userRoutes);
 router.use('/login', loginRoutes);
 
 // Logout
-router.get('/logout', function(req, res, next) {
-    req.logout(function(err) {
-        if (err) { return next(err); }
-        res.redirect('/');
-    });
-});
+router.use('/logout', logoutRoute);
 
 
 

@@ -84,7 +84,8 @@ questionController.addNewQuestion = async function(req, res) {
         questionInfo : req.body.questionInfo,
         question : req.body.question,
         answer : req.body.answer,
-        author_id : "current_user_id",  // for letter (change all occurance) - (get and store the current user id that is performing the operation)
+        author_id : req.session.user._id,  // - (get and store the current user id that is performing the operation)
+        author_name: req.session.user.displayName,
         timestamp : Date.now()
     };
 
@@ -144,19 +145,18 @@ questionController.updateAQuestion = async function(req, res) {
                 logError(err);
                 return res.status(400).json({message: err});
             }
-        }).then(async (questions) => {
+        }).then(async (question) => {
             // check if array is empty
-            console.log(`Questions: ${questions}`);  // for debugging purpose
-            if (questions == null || questions == [] || questions == '') {
+            console.log(`Question: ${JSON.stringify(question)}`);  // for debugging purpose
+            if (question == null || question == [] || question == '') {
                 return res.status(404).json({message: `question with id: ${questionId}; Not found, or is empty`});
             }
             // Add timestamp and updateTimestamp to Update questionObject
             // adding author_id and timestamp
-            questionObject.author_id = questions[0].author_id != undefined ? questions[0].author_id : 'current_user_id';
-            questionObject.timestamp = questions[0].timestamp == undefined || questions[0].timestamp == null ? Date.now() : questions[0].timestamp;
-            // adding update_authors_id and updateTimestamps
-            questionObject.update_authors_id = questions[0].update_authors_id != undefined ? [...questions[0].update_authors_id, 'current_user_id'] : ['current_user_id'];
-            questionObject.updateTimestamps = questions[0].updateTimestamps != undefined ? [...questions[0].updateTimestamps, Date.now()] : [Date.now()];
+            questionObject.author_id = question[0].author_id != undefined ? question[0].author_id : req.session.user._id;
+            questionObject.timestamp = question[0].timestamp == undefined || question[0].timestamp == null ? Date.now() : question[0].timestamp;
+            // adding updateInfo
+            questionObject.updateInfo = question[0].updateInfo != undefined ? [...question[0].updateInfo, { author_id: req.session.user._id, author_name: req.session.user.displayName, updateTimestamp: Date.now() }] : [{ author_id: req.session.user._id, author_name: req.session.user.displayName, updateTimestamp: Date.now() }];
             console.log(`updateQuestionObject: ${JSON.stringify(questionObject)}`);  // for debugging purpose
 
             // update db with questionObject

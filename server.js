@@ -4,6 +4,7 @@
 // Dependencies
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require("cookie-parser")
 const dotenv = require('dotenv');
 const cors = require('cors');
 // const { logError, returnError, isOperationalError } = require('./errorHandler');
@@ -14,6 +15,7 @@ const passport = require('passport');
 const session = require('express-session');
 const GitHubStrategy = require('passport-github2').Strategy;
 const routes = require('./routes');
+const authenticate = require('./middleware/authenticate');
 const userController = require('./controllers/user');
 // const { graphql } = require('graphql');
 
@@ -45,6 +47,12 @@ app.use(passport.session());
 // Middleware for handling CORS requests
 app.use(cors());
 
+// CookieParser MiddleWare
+app.use(cookieParser())
+
+// check for jwt token and verify token if exist
+app.use(authenticate.checkJWTToken);
+
 // using github to authenticate user
 passport.use(new GitHubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
@@ -57,7 +65,7 @@ passport.use(new GitHubStrategy({
         console.log(`findOrCreateOAuthProfileResponse: ${JSON.stringify(response)}`);  // for testing purpose
         if (response.status == 200 || response.status == 201) {
             console.log(`Current User Profile Object: ${JSON.stringify(profile)}`);
-            return done(null, profile); 
+            return done(null, response.userData); 
         } else {
             return done(response.message);
         }

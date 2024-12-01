@@ -1,7 +1,7 @@
 // IMPORT REQUIRED MODULES
 const express = require('express');
-const validateUser = require('../middleware/validation/user-validation');
-const authenticate = require('../middleware/authenticate');
+// const validateUser = require('../middleware/validation/user-validation');
+// const authenticate = require('../middleware/authenticate');
 
 // IMPORT CONTROLLER
 const loginController = require('../controllers/login');
@@ -13,7 +13,9 @@ const router = express.Router();
 
 router.get('/', loginController.loginOptions);
 
-router.get('/user', loginController.loginUser);
+router.get('/user', loginController.loginInstruction);
+
+router.post('/user', loginController.loginUser);
 
 router.get('/github', passport.authenticate('github'), loginController.authenticateGithub);
 

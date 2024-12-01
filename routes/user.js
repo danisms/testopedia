@@ -11,10 +11,18 @@ const userController = require('../controllers/user');
 const router = express.Router();
 
 // Route to get all Users
-router.get('/', userController.getAllUsers);
+router.get('/',
+    authenticate.checkLogin,  // check if user is logged in
+    authenticate.isAuthenticatedAdmin,  // check if user is at least an admin
+    userController.getAllUsers
+);
 
 // Route to get User by id
-router.get('/:id', userController.getAUser);
+router.get('/:id',
+    authenticate.checkLogin,  // check if user is logged in
+    authenticate.isAuthenticatedAdmin,  // check if user is at least an admin
+    userController.getAUser
+);
 
 // Route to add new User (i.e create account/signup)
 router.post('/',
@@ -24,8 +32,8 @@ router.post('/',
 );
 
 // Route to update a User
-router.put('/:id',
-    authenticate.isAuthenticated,
+router.put('/update-profile',
+    authenticate.checkLogin,  // check if user is logged in
     validateUser.updateUserRules(),
     validateUser.checkUpdateUser,
     userController.updateAUser,
@@ -33,7 +41,8 @@ router.put('/:id',
 
 // Route to delete a User
 router.delete('/:id',
-    authenticate.isAuthenticated,
+    authenticate.checkLogin,  // check if user is logged in
+    authenticate.isAuthenticatedFullControl,  // check if user is at least an admin
     userController.deleteAUser
 );
 

@@ -1,3 +1,6 @@
+// IMPORT MODULES
+const mongodb = require('../../models/db/connect-db');
+
 const { body, validationResult } = require('express-validator');
 
 const validate = {};
@@ -23,22 +26,63 @@ validate.addNewUserRules = () => {
         .withMessage("firstname should not be empty"),
 
         body('email')
-        .trim()
-        .isString()
-        .isEmail()
-        .withMessage('please enter a valid email address e.g "example@example.com"'),
-        // .custom((value, { req }) => {
-        //     return true;
-        // }),
+        .custom( async (value, { req }) => {
+            const emailValue = value.trim();
+            if (emailValue == null || emailValue == '') {
+                throw new Error('Email should not be empty');
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailValue)) {
+                throw new Error("invalid email format: please enter a valid email address e.g 'example@example.com'");
+            }
+
+            // check if email doesn't already exist in db
+            try {
+                const usersDb = mongodb.getDb().db('testopidia').collection('users');
+                const userData = await usersDb.findOne({ email: emailValue });
+                console.log(userData);  // for visualizing and testing purpose
+                if (userData) {
+                    // authenticate using accountType
+                    throw new Error("email already exist");
+                }
+            } catch (err) {
+                throw new Error(err);
+            }
+
+            return true;
+        }),
+
+        body('username')
+        .custom( async (value, { req }) => {
+            const usernameValue = value.trim();
+            if (usernameValue == null || usernameValue == '') {
+                throw new Error('Username should not empty');
+            }
+
+            if (usernameValue.length < 6) {
+                throw new Error("username should not be less than 6 characters");
+            }
+
+            // check if username doesn't already exist in db
+            try {
+                const usersDb = mongodb.getDb().db('testopidia').collection('users');
+                const userData = await usersDb.findOne({ username: usernameValue });
+                console.log(userData);  // for visualizing and testing purpose
+                if (userData) {
+                    // authenticate using accountType
+                    throw new Error("username already exist");
+                }
+            } catch (err) {
+                throw new Error(err);
+            }
+
+            return true;
+        }),
 
         body('bio')
         .trim()
         .isString(),
-        
-        body('username')
-        .trim()
-        .isString()
-        .isnot
 
         body('password')
         .trim()
@@ -67,178 +111,123 @@ validate.checkNewUser = (req, res, next) => {
 
 // VALIDATE UPDATE User
 validate.updateUserRules = () => {
-    // Enum checks
-    const levels = ['basic', 'intermediate', 'advance', 'expert'];
-    const types = ['mc', 'text', 'file', 'verbal'];
-    const mcUserRegex = /^.+mc\[(.*?)]$/;  // mc User format
     return [
-        body('subject')
+        body('firstname')
         .trim()
         .escape()
         .isString()
         .notEmpty()
-        .isLength({min: 3})
-        .withMessage("subject should not be empty"),
+        .isLength({min: 2})
+        .withMessage("firstname should not be empty"),
 
-        body('level')
-        .trim()
-        .isIn(levels)
-        .withMessage(`level must be of one of: ${levels.join(', ')};`),
-
-        body('type')
-        .trim()
-        .isIn(types)
-        .withMessage(`type must be of type: ${types.join(', ')}; Note: mc stands for multiple-choice`),
-
-        body('UserInfo')
-        .trim()
-        .escape()
-        .isString()
-        .notEmpty()
-        .isLength({min: 1})
-        .withMessage("User info should not be empty"),
-
-        body('User')
+        body('lastname')
         .trim()
         .isString()
         .notEmpty()
-        .isLength({min: 3})
-        .withMessage("User is required!")
-        .custom((value, { req }) => {
-            // A Custom Check to Check Type Inorder to Validate The User field
-            console.log(`User Value: ${value}\nUser Data-type: ${typeof(value)}`);  // for testing purpose
+        .isLength({min: 2})
+        .withMessage("firstname should not be empty"),
 
-            const { type } = req.body;  // get the request 'type' field value from the body
-            // appling extral check to make sure type is passed, becaused it's required for the validation
-            if (!type) {
-                throw new Error('Type is required for User validation.');
-            }
-
-            // Validate Based On 'type'
-            // check for 'mc' type
-            if (type == types[0]){
-                console.log('Mc User Type Detected');  // for debugging purpose
-                try {
-                    const UserFormat = value.split('mc[')
-                    console.log(`UserFormat: ${UserFormat}`);  // for debugging purpose
-                    // using a regular expression to match the User format "User ms[v1, v2, ...]" with nothing else after the closed square bracket
-                    const matchMcUserFormat = value.match(mcUserRegex);
-                    console.log(`Match Format: ${matchMcUserFormat}`);  // for debugging purpose
-
-                    if (!matchMcUserFormat || UserFormat.length != 2) {
-                        throw new Error(`invalid User format for type: ${types[0]}\nformat must be of: "User mc['multiple-choice', 'multiple-choice'...]"`);
+        body('email')
+        .custom( async (value, { req }) => {
+            const emailValue = value.trim();
+            if (emailValue != null) {
+                if (emailValue == '') {
+                    req.body.email = null;  // set email to null;
+                } else {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailValue)) {
+                        throw new Error("invalid email format: please enter a valid email address e.g 'example@example.com'");
                     }
-                    
-                    if (UserFormat[1].split(',').length < 2) {
-                        throw new Error(`invalid User format for type: ${types[0]}\nUser must have at least two multiple choice answers in User`);
+
+                    // check if email was changed
+                    if (req.session.user.email != emailValue) {
+                        // check if email doesn't already exist in db
+                        try {
+                            const usersDb = mongodb.getDb().db('testopidia').collection('users');
+                            const userData = await usersDb.findOne({ email: emailValue });
+                            console.log(userData);  // for visualizing and testing purpose
+                            if (userData) {
+                                // authenticate using accountType
+                                throw new Error("email already exist");
+                            }
+                        } catch (err) {
+                            throw new Error(err);
+                        }
                     }
-                } catch (err) {
-                    throw new Error(err);
                 }
             }
 
             return true;
         }),
 
-        body('answer')
-        .custom((value, { req }) => {
-            // A Custom Check to Check Type Inorder to Validate The answer field
+        body('username')
+        .custom( async (value, { req }) => {
+            const usernameValue = value.trim();
+            if (usernameValue != null) {
+                if (usernameValue == '') {
+                    req.body.username = null;  // set username to null;
+                } else {
+                    if (usernameValue.length < 6) {
+                        throw new Error("username should not be less than 6 characters");
+                    }
 
-            const { type } = req.body;  // get the request 'type' field value from the body
-            // appling extral check to make sure type is passed, becaused it's required for the validation
-            if (!type) {
-                throw new Error('Type is required for value validation.');
-            }
-
-            // Validate Based On 'type'
-            switch (type) {
-                // validate 'mc' type
-                // multiple-choice User must be an answer of dataType "int" or "array"
-                // the character cannot be more than the length of the multiple-choice answers suplied in the array of answers provided in the User.
-                case types[0]:
-                    // validate User format for type 'mc'
-                    const { User } = req.body;  // get User
-                    let UserFormat;
-                    try {
-                        UserFormat = User.split('mc[');  // for performing check
-                        // using a regular expression to match the User format "User ms[v1, v2, ...]" with nothing else after the closed square bracket
-                        const matchMcUserFormat = User.match(mcUserRegex);
-                        if (!matchMcUserFormat || UserFormat.length != 2) {
-                            throw new Error(`invalid User format for type: ${types[0]}\nformat must be of: "User mc['multiple-choice', 'multiple-choice'...]"`);
-                        }
-                        // confirm the choice answers is more than two(2) values in the array
-                        if (UserFormat[1].split(',').length < 2) {
-                            throw new Error(`invalid User format for type: ${types[0]}\nUser must have at least two multiple choice answers in User`);
-                        }
-                    } catch (err) {
-                        throw new Error(err);
-                    }
-                    // use validated User format to validate answer
-                    try {
-                        // checks
-                        if (!Number.isInteger(parseInt(value)) && !Array.isArray(value)) {
-                            throw new Error(`answer must be a number or array (with character/s not greater than the multiple choice answer/s provided) for type ${types[0]}`);
-                        } 
-                        if (Number.isInteger(parseInt(value))) {
-                            // number cannot be more than the provided multiple-choice answer given in the User
-                            if (parseInt(value) >= UserFormat[1].split(',').length) {
-                                throw new Error(`invalid answer for type: ${types[0]}: answer must be an index value of the provided multiple-choice answers`);
+                    // check if username was changed
+                    if (req.session.user.username != usernameValue) {
+                        // check if username doesn't already exist in db
+                        try {
+                            const usersDb = mongodb.getDb().db('testopidia').collection('users');
+                            const userData = await usersDb.findOne({ username: usernameValue });
+                            console.log(userData);  // for visualizing and testing purpose
+                            if (userData) {
+                                // authenticate using accountType
+                                throw new Error("username already exist");
                             }
+                        } catch (err) {
+                            throw new Error(err);
                         }
-                        if (Array.isArray(value)) {
-                            // the length of the array cannot be more than the length of multiple-choice answer array
-                            if (value.length >= UserFormat[1].split(',').length) {
-                                throw new Error(`invalid answer for type: ${types[0]}: list answers must not be more than the provided multiple-choice answers`);
-                            }
-
-                            // each number in the array can not be more than the length of the multiple-choice array
-                            value.forEach((item) => {
-                                if (!Number.isInteger(parseInt(item)) || (parseInt(item) >= UserFormat[1].split(',').length)) {
-                                    throw new Error(`invalid answer for type '${types[0]}': list answers must be a number and the number must be a list index value of the provided multiple-choice answers`);
-                                }
-                            })
-                                
-                            // numbers in the array cannot repeat (Set make sure that every value in the value array is unique)
-                            if (new Set(value).size !== value.length) {
-                                throw new Error(`invalid answer for type: ${types[0]}: list answers must not repeat`);
-                            }
-                        }
-                    } catch (err) {
-                        throw new Error(err);
                     }
-                    break;
-                // validate 'text' type
-                // text Users must be an answer of string and not empty
-                case types[1]:
-                    if (typeof value != 'string' && value.trim().length < 1) {
-                        throw new Error(`Answer must be a string and should not be empty for type ${types[1]}`);
-                    }
-                    break;
-                // validate 'file' type
-                // file User requires the answer to be link to the uploaded file
-                case types[2]:
-                    try {
-                        new URL(value);
-                    } catch(err) {
-                        throw new Error(`Invalid url format. Answer must be a valid url to the uploaded file (IMAGE/PDF) for type ${types[2]}`);
-                    }
-                    break;
-                // validate verbal type
-                // varbal User requires the answer to be a link to the uploaded audio file.
-                case types[3]:
-                    try {
-                        new URL(value);
-                    } catch(err) {
-                        throw new Error(`Invalid url format. Answer must be a valid url to the uploaded audio file (MP3/WAV) for type ${types[3]}`);
-                    }
-                    break;
-                // a default response error when no type was used
-                default:
-                    throw new Error('Invalid type provided');
+                }
             }
 
             return true;
         }),
+
+        body('profilePhotoUrl')
+        .custom((value, { req }) => {
+            const imageUrlValue = value.trim();
+            if (imageUrlValue != null) {
+                if (imageUrlValue == '') {
+                    req.body.profilePhotoUrl = null;  // set email to null;
+                } else {
+                    try {
+                        new URL(imageUrlValue);
+                    } catch(err) {
+                        throw new Error('invalid url format: please provide a valid url for your profile picture');
+                    }
+                }
+            }
+            return true;
+        }),
+
+        body('password')
+        .custom((value, { req }) => {
+            const passwordValue = value.trim();
+            if (passwordValue != null) {
+                if (passwordValue == '') {
+                    req.body.password = null;  // set email to null;
+                } else {
+                    const passwordRegex = /^[a-zA-Z0-9]{7,}$/;
+                    if (!passwordRegex.test(passwordValue)) {
+                        throw new Error("password must be at least 7 characters long and aplphanumeric.");
+                    }
+                }
+            }
+
+            return true;
+        }),
+
+        body('bio')
+        .trim(),
     ]
 }
 
